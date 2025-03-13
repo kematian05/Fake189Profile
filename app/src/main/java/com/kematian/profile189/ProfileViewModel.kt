@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import androidx.core.content.edit
 
 class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() {
 
@@ -58,7 +59,7 @@ class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() 
 
     fun saveImageUriToPreferences(context: Context, uri: Uri?) {
         val sharedPreferences = context.getSharedPreferences("profile_prefs", Context.MODE_PRIVATE)
-        sharedPreferences.edit().putString("profile_image_uri", uri?.toString()).apply()
+        sharedPreferences.edit() { putString("profile_image_uri", uri?.toString()) }
     }
 
     fun getImageUriFromPreferences(context: Context): Uri? {

@@ -5,7 +5,6 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import kotlinx.coroutines.flow.Flow
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 class ProfileRepository(private val profileDao: ProfileDao) {
@@ -23,7 +22,6 @@ class ProfileRepository(private val profileDao: ProfileDao) {
         profilePictureUri: String?
     ) {
         val dateString = birthDate?.format(DateTimeFormatter.ofPattern("MM/dd/yyyy")) ?: ""
-
         val profile = Profile(
             username = username,
             gender = gender,
