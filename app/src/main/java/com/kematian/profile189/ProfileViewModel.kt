@@ -31,7 +31,7 @@ class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() 
     fun saveProfile(
         username: String,
         gender: String,
-        birthDate: LocalDate?,
+        birthDate: String?,
         telephone: String,
         email: String,
         language: String,

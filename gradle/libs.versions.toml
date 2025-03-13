@@ -1,6 +1,6 @@
 [versions]
 accompanistPermissionsVersion = "0.29.0-alpha"
-agp = "8.8.2"
+agp = "8.9.0"
 androidxConstraintlayoutCompose = "1.0.1"
 coilCompose = "3.1.0"
 constraintlayoutCompose = "1.1.1"

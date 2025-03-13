@@ -68,7 +68,6 @@ dependencies {
     implementation(libs.com.google.accompanist.accompanist.navigation.material)
     implementation(libs.androidx.constraintlayout.compose)
 
-
     implementation(libs.maps.compose)
     implementation(libs.coil.compose)
 

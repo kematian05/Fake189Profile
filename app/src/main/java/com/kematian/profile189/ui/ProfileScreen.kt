@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
@@ -16,6 +17,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,8 +35,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -50,6 +55,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -64,6 +70,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -79,13 +86,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
-import com.kematian.profile189.CustomDatePickerDialog
 import com.kematian.profile189.CustomRadioButton
-import com.kematian.profile189.DatePickerField
 import com.kematian.profile189.FocusableOutlinedTextField
 import com.kematian.profile189.ProfileRepository
 import com.kematian.profile189.ProfileViewModel
 import com.kematian.profile189.R
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -100,13 +108,16 @@ fun ProfileScreen(
 ) {
     val context = LocalContext.current
     val profileState by viewModel.profile.collectAsStateWithLifecycle()
-    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
+    var selectedDate by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var telephone by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var gender by remember { mutableStateOf("") }
     var language by remember { mutableStateOf("Azərbaycan dili") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val coroutineScope = rememberCoroutineScope()
+    var saveJob by remember { mutableStateOf<Job?>(null) }
 
     LaunchedEffect(profileState) {
         profileState?.let { profile ->
@@ -118,14 +129,15 @@ fun ProfileScreen(
 
             if (profile.birthDate.isNotEmpty()) {
                 val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
-                selectedDate = LocalDate.parse(profile.birthDate, formatter)
+                selectedDate = LocalDate.parse(profile.birthDate, formatter).format(
+                    DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                )
             }
 
             imageUri = viewModel.getImageUriFromPreferences(context)
         }
     }
 
-    var showDialog by remember { mutableStateOf(false) }
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -174,7 +186,24 @@ fun ProfileScreen(
         imageUri = uri
     }
 
-    val saveProfileData = {
+    val scheduleSave = {
+        saveJob?.cancel()
+        saveJob = coroutineScope.launch {
+            delay(1000)
+            viewModel.saveProfile(
+                username = username,
+                gender = gender,
+                birthDate = selectedDate,
+                telephone = telephone,
+                email = email,
+                language = language,
+                profilePictureUri = imageUri?.toString()
+            )
+        }
+    }
+
+    val saveProfileDataImmediately = {
+        saveJob?.cancel()
         viewModel.saveProfile(
             username = username,
             gender = gender,
@@ -187,12 +216,12 @@ fun ProfileScreen(
         viewModel.saveImageUriToPreferences(context, imageUri)
     }
 
-    LaunchedEffect(username) { saveProfileData() }
-    LaunchedEffect(selectedDate) { saveProfileData() }
-    LaunchedEffect(gender) { saveProfileData() }
-    LaunchedEffect(telephone) { saveProfileData() }
-    LaunchedEffect(email) { saveProfileData() }
-    LaunchedEffect(language) { saveProfileData() }
+    LaunchedEffect(username) { scheduleSave() }
+    LaunchedEffect(gender) { scheduleSave() }
+    LaunchedEffect(telephone) { scheduleSave() }
+    LaunchedEffect(email) { scheduleSave() }
+    LaunchedEffect(language) { scheduleSave() }
+    LaunchedEffect(selectedDate) { saveProfileDataImmediately() }
     LaunchedEffect(imageUri) { viewModel.saveImageUriToPreferences(context, imageUri) }
 
     MaterialTheme {
@@ -227,7 +256,7 @@ fun ProfileScreen(
                                     .size(28.dp)
                                     .align(Alignment.CenterStart)
                                     .clickable(onClick = {
-                                        saveProfileData()
+                                        saveProfileDataImmediately()
                                         navController.navigate("map")
                                     })
                             )
@@ -325,6 +354,7 @@ fun ProfileScreen(
                                 ) {
                                     val options = listOf("Kişi", "Qadın")
                                     var expanded by remember { mutableStateOf(false) }
+                                    var expandedDatePicker by remember { mutableStateOf(false) }
                                     ExposedDropdownMenuBox(
                                         expanded = expanded,
                                         onExpandedChange = { expanded = !expanded },
@@ -458,23 +488,88 @@ fun ProfileScreen(
                                         }
                                     }
                                     Spacer(modifier = Modifier.width(12.dp))
-                                    DatePickerField(
-                                        selectedDate = selectedDate,
-                                        onOpenDialog = { showDialog = true },
+                                    Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
+                                            .border(
+                                                width = if (expandedDatePicker) 2.dp else 1.dp,
+                                                color = if (expandedDatePicker) Color(0xFFFBE502) else Color(
+                                                    0xFFBCBCBC
+                                                ),
+                                                shape = RoundedCornerShape(8.dp)
+                                            )
                                             .weight(1f)
-                                    )
-
-                                    if (showDialog) {
-                                        CustomDatePickerDialog(
-                                            initialDate = selectedDate ?: LocalDate.now(),
-                                            onDateSelected = { date ->
-                                                selectedDate = date
-                                                showDialog = false
+                                            .clickable {
+                                                expandedDatePicker = true
+                                                Log.d("Clicked", "Box Clicked")
                                             },
-                                            onDismiss = { showDialog = false }
+                                    ) {
+                                        OutlinedTextField(
+                                            value = selectedDate,
+                                            onValueChange = {},
+                                            readOnly = true,
+                                            placeholder = {
+                                                Text(
+                                                    text = "MM/DD/YY",
+                                                    color = Color(0xFFBCBCBC),
+                                                    style = TextStyle(
+                                                        fontWeight = FontWeight.Normal,
+                                                        fontSize = 16.sp,
+                                                        lineHeight = 20.sp
+                                                    )
+                                                )
+                                            },
+                                            trailingIcon = {
+                                                Icon(
+                                                    painter = painterResource(id = if (expandedDatePicker) R.drawable.arrow_up else R.drawable.arrow_down),
+                                                    contentDescription = "Dropdown Icon",
+                                                    tint = Color(0xFFBCBCBC),
+                                                    modifier = Modifier
+                                                        .size(28.dp)
+                                                )
+                                            },
+                                            colors = OutlinedTextFieldDefaults.colors(
+                                                unfocusedBorderColor = Color.Transparent,
+                                                focusedBorderColor = Color.Transparent
+                                            ),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
                                         )
+                                    }
+                                    if (expandedDatePicker) {
+                                        val datePickerState = rememberDatePickerState()
+                                        DatePickerDialog(
+                                            onDismissRequest = { expandedDatePicker = false },
+                                            confirmButton = {
+                                                FilledTonalButton(
+                                                    onClick = {
+                                                        datePickerState.selectedDateMillis?.let { millis ->
+                                                            val localDate =
+                                                                java.time.Instant.ofEpochMilli(
+                                                                    millis
+                                                                )
+                                                                    .atZone(java.time.ZoneId.systemDefault())
+                                                                    .toLocalDate()
+                                                            selectedDate = localDate.format(
+                                                                DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                                                            )
+                                                        }
+                                                        expandedDatePicker = false
+                                                    }
+                                                ) {
+                                                    Text("OK")
+                                                }
+                                            },
+                                            dismissButton = {
+                                                FilledTonalButton(
+                                                    onClick = { expandedDatePicker = false }
+                                                ) {
+                                                    Text("Cancel")
+                                                }
+                                            }
+                                        ) {
+                                            DatePicker(state = datePickerState)
+                                        }
                                     }
                                 }
                                 FocusableOutlinedTextField(

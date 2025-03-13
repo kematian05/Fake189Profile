@@ -16,7 +16,7 @@ class ProfileRepository(private val profileDao: ProfileDao) {
     suspend fun saveProfile(
         username: String,
         gender: String,
-        birthDate: LocalDate?,
+        birthDate: String?,
         telephone: String,
         email: String,
         language: String,

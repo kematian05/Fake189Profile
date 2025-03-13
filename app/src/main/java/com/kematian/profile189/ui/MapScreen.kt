@@ -123,9 +123,9 @@ fun MapScreen(
             gesturesEnabled = drawerState.isOpen
         ) {
             if (showSearchScreen) {
-                navController.navigate("search") {
-                    launchSingleTop = true
-                }
+                SearchScreen(
+                    onClose = { showSearchScreen = false },
+                )
             } else {
                 Scaffold {
                     Box(
