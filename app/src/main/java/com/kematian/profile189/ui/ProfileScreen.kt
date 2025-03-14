@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -232,7 +233,7 @@ fun ProfileScreen(
             Column(
                 modifier = Modifier
                     .systemBarsPadding()
-                    .background(color = Color(0xFFE3DBDB))
+                    .background(color = Color(0xFFF8F8F8))
             ) {
                 Box(
                     modifier = Modifier
@@ -550,6 +551,9 @@ fun ProfileScreen(
                                             onDismissRequest = { expandedDatePicker = false },
                                             confirmButton = { },
                                             dismissButton = { },
+                                            colors = DatePickerDefaults.colors(
+                                                todayDateBorderColor = Color(0xFFFBE502)
+                                            )
                                         ) {
                                             DatePicker(
                                                 state = datePickerState,

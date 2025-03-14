@@ -115,7 +115,8 @@ fun MapScreen(
                 ModalDrawerSheet {
                     NavigationDrawer(
                         navController = navController,
-                        imageUri = viewModel.profile.value?.profilePictureUri
+                        imageUri = viewModel.profile.value?.profilePictureUri,
+                        username = viewModel.profile.value?.username.toString()
                     )
                 }
             },

@@ -31,7 +31,6 @@ class ProfileRepository(private val profileDao: ProfileDao) {
             language = language,
             profilePictureUri = profilePictureUri
         )
-
         Log.d("SavedProfile", "Profile saved: $profile")
         profileDao.insertProfile(profile)
     }
