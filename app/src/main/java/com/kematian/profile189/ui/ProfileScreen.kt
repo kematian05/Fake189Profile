@@ -238,7 +238,6 @@ fun ProfileScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-//                        .shadow(5.dp, ambientColor = Color(0x0000000D))
                         .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
                         .background(color = Color.White)
                 ) {
@@ -295,12 +294,12 @@ fun ProfileScreen(
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .size(92.dp)
-                                    .clip(shape = RoundedCornerShape(12.dp))
                                     .border(
                                         width = 2.dp,
-                                        color = Color.White,
+                                        color = Color.Transparent,
                                         shape = RoundedCornerShape(12.dp)
                                     )
+                                    .clip(shape = RoundedCornerShape(12.dp))
                             )
                             Box(
                                 modifier = Modifier
@@ -494,6 +493,7 @@ fun ProfileScreen(
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
+                                            .clip(RoundedCornerShape(8.dp))
                                             .border(
                                                 width = if (expandedDatePicker) 2.dp else 1.dp,
                                                 color = if (expandedDatePicker) Color(0xFFFBE502) else Color(
@@ -529,18 +529,29 @@ fun ProfileScreen(
                                                 lineHeight = 24.sp
                                             ),
                                             trailingIcon = {
-                                                Icon(
-                                                    painter = painterResource(id = if (expandedDatePicker) R.drawable.arrow_up else R.drawable.arrow_down),
-                                                    contentDescription = "Dropdown Icon",
-                                                    tint = Color(0xFFBCBCBC),
-                                                    modifier = Modifier
-                                                        .size(28.dp)
-                                                )
+                                                this@Row.AnimatedVisibility(expandedDatePicker) {
+                                                    Icon(
+                                                        painter = painterResource(id = R.drawable.arrow_up),
+                                                        contentDescription = "Dropdown Icon",
+                                                        tint = Color(0xFFBCBCBC),
+                                                        modifier = Modifier
+                                                            .size(28.dp)
+                                                    )
+                                                }
+                                                this@Row.AnimatedVisibility(!expandedDatePicker) {
+                                                    Icon(
+                                                        painter = painterResource(id = R.drawable.arrow_down),
+                                                        contentDescription = "Dropdown Icon",
+                                                        tint = Color(0xFFBCBCBC),
+                                                        modifier = Modifier
+                                                            .size(28.dp)
+                                                    )
+                                                }
                                             },
                                             colors = OutlinedTextFieldDefaults.colors(
                                                 unfocusedBorderColor = Color.Transparent,
                                                 focusedBorderColor = Color.Transparent,
-                                                disabledBorderColor = Color.Transparent
+                                                disabledBorderColor = Color.Transparent,
                                             ),
                                             modifier = Modifier
                                                 .fillMaxWidth()
@@ -551,12 +562,15 @@ fun ProfileScreen(
                                             onDismissRequest = { expandedDatePicker = false },
                                             confirmButton = { },
                                             dismissButton = { },
-                                            colors = DatePickerDefaults.colors(
-                                                todayDateBorderColor = Color(0xFFFBE502)
-                                            )
                                         ) {
                                             DatePicker(
                                                 state = datePickerState,
+                                                colors = DatePickerDefaults.colors(
+                                                    selectedDayContainerColor = Color(0xFFF7DF12),
+                                                    selectedYearContainerColor = Color(0xFFF7DF12),
+                                                    navigationContentColor = Color(0xFFF7DF12),
+                                                    weekdayContentColor = Color(0xFFCDCBCC),
+                                                ),
                                                 title = null,
                                                 headline = null,
                                                 showModeToggle = false
@@ -596,6 +610,7 @@ fun ProfileScreen(
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
+                                        .clip(RoundedCornerShape(8.dp))
                                         .border(
                                             width = 1.dp,
                                             color = Color(0xFFBCBCBC),
@@ -631,6 +646,7 @@ fun ProfileScreen(
                                     modifier = Modifier
                                         .padding(top = 16.dp)
                                         .fillMaxWidth()
+                                        .clip(RoundedCornerShape(8.dp))
                                         .border(
                                             width = 1.dp,
                                             color = Color(0xFFBCBCBC),
