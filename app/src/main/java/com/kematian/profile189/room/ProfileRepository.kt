@@ -39,6 +39,7 @@ class ProfileRepository(private val profileDao: ProfileDao) {
         profileDao.updateProfile(profile)
     }
 
+
     suspend fun deleteProfile() {
         profileDao.deleteProfile()
     }

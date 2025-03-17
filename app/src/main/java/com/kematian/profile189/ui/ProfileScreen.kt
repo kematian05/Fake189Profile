@@ -178,7 +178,9 @@ fun ProfileScreen(
     val launcherGallery = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
+        ImageLoader(context).memoryCache?.clear()
         imageUri = uri
+        viewModel.saveImageUriToPreferences(context, uri)
     }
 
     val scheduleSave = {
