@@ -78,10 +78,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.ImageLoader
 import coil3.compose.rememberAsyncImagePainter
-import com.kematian.profile189.CustomRadioButton
-import com.kematian.profile189.FocusableOutlinedTextField
-import com.kematian.profile189.ProfileRepository
-import com.kematian.profile189.ProfileViewModel
+import com.kematian.profile189.customViews.CustomRadioButton
+import com.kematian.profile189.customViews.FocusableOutlinedTextField
+import com.kematian.profile189.room.ProfileRepository
+import com.kematian.profile189.viewmodels.ProfileViewModel
 import com.kematian.profile189.R
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

@@ -1,4 +1,4 @@
-package com.kematian.profile189
+package com.kematian.profile189.viewmodels
 
 import android.content.Context
 import android.net.Uri
@@ -12,8 +12,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import androidx.core.content.edit
+import com.kematian.profile189.room.Profile
+import com.kematian.profile189.room.ProfileRepository
 
 class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() {
 

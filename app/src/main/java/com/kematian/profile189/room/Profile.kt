@@ -1,4 +1,4 @@
-package com.kematian.profile189
+package com.kematian.profile189.room
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

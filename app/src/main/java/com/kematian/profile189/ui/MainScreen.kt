@@ -7,8 +7,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.kematian.profile189.ProfileRepository
-import com.kematian.profile189.ProfileViewModel
+import com.kematian.profile189.room.ProfileRepository
+import com.kematian.profile189.viewmodels.ProfileViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -23,7 +23,9 @@ fun MainScreen() {
         composable("profile") {
             ProfileScreen(
                 onBackClicked = {
-                    navController.popBackStack()
+                    if (navController.previousBackStackEntry != null) {
+                        navController.popBackStack()
+                    }
                 },
                 viewModel = profileViewModel
             )

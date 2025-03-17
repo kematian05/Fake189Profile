@@ -68,8 +68,8 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
-import com.kematian.profile189.ProfileRepository
-import com.kematian.profile189.ProfileViewModel
+import com.kematian.profile189.room.ProfileRepository
+import com.kematian.profile189.viewmodels.ProfileViewModel
 import com.kematian.profile189.R
 import kotlinx.coroutines.launch
 

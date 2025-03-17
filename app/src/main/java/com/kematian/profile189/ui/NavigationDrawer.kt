@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -18,11 +17,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,9 +29,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -45,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import coil3.compose.rememberAsyncImagePainter
+import com.kematian.profile189.customViews.NavigationItem
 import com.kematian.profile189.R
 import kotlinx.coroutines.launch
 
@@ -71,8 +65,6 @@ fun NavigationDrawer(
     )
 
     val coroutineScope = rememberCoroutineScope()
-
-
 
     var test by remember { mutableStateOf(true) }
     BackHandler(enabled = test) {
@@ -213,99 +205,6 @@ fun NavigationDrawer(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun OfferItemCard(item: OfferItem) {
-    Box(
-        modifier = Modifier
-            .width(130.dp)
-            .height(98.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .border(
-                2.dp,
-                if (item.seen) Color(0xFFFBE502) else Color.Transparent,
-                shape = RoundedCornerShape(8.dp)
-            )
-    ) {
-        Box(
-            modifier = Modifier
-                .padding(3.dp)
-                .fillMaxSize()
-                .clip(RoundedCornerShape(8.dp))
-        ) {
-            Image(
-                painter = painterResource(id = item.icon),
-                contentDescription = item.title,
-                contentScale = ContentScale.Crop,
-                alpha = 0.9f,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .drawWithCache {
-                        val gradient = Brush.verticalGradient(
-                            colors = listOf(Color.Transparent, Color.Black),
-                            startY = size.height / 3,
-                            endY = size.height
-                        )
-                        onDrawWithContent {
-                            drawContent()
-                            drawRect(brush = gradient, blendMode = BlendMode.Multiply)
-                        }
-                    }
-            )
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.BottomStart,
-            ) {
-                Text(
-                    text = item.title,
-                    color = Color.White,
-                    fontSize = 12.sp,
-                    lineHeight = 14.sp,
-                    fontWeight = FontWeight.W500,
-                    modifier = Modifier
-                        .padding(4.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun NavigationItem(item: NavItem) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { }
-            .padding(top = 16.dp, bottom = 16.dp, start = 20.dp, end = 20.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .clip(shape = CircleShape)
-                .size(48.dp)
-                .background(Color(0xFFF1F1F1)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(id = item.icon),
-                contentDescription = item.title,
-            )
-        }
-        Text(
-            text = item.title,
-            fontSize = 16.sp,
-            lineHeight = 22.sp,
-            fontWeight = FontWeight.W500,
-            modifier = Modifier
-                .padding(start = 14.dp)
-                .weight(1f)
-        )
-        Icon(
-            painter = painterResource(R.drawable.arrow_forward),
-            contentDescription = "Navigate",
-        )
     }
 }
 
