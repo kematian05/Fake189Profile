@@ -51,7 +51,6 @@ dependencies {
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    //noinspection KaptUsageInsteadOfKsp
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.material3)
@@ -66,7 +65,11 @@ dependencies {
     implementation(libs.google.accompanist.permissions)
 
     implementation(libs.com.google.accompanist.accompanist.navigation.material)
-    implementation(libs.androidx.constraintlayout.compose)
+    implementation(libs.androidx.constraintlayout.compose.v111)
+
+    implementation(libs.google.accompanist.systemuicontroller)
+
+
 
     implementation(libs.maps.compose)
     implementation(libs.coil.compose)

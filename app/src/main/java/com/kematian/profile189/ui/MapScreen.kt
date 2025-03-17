@@ -1,9 +1,11 @@
 package com.kematian.profile189.ui
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -56,8 +58,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
@@ -73,10 +73,12 @@ import com.kematian.profile189.ProfileViewModel
 import com.kematian.profile189.R
 import kotlinx.coroutines.launch
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "StateFlowValueCalledInComposition")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "StateFlowValueCalledInComposition",
+    "ContextCastToActivity"
+)
 @Composable
 fun MapScreen(
-    navController: NavController,
+    onProfileClicked: () -> Unit,
     viewModel: ProfileViewModel,
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -92,7 +94,7 @@ fun MapScreen(
     val userMarkerState = rememberMarkerState(position = currentLocation ?: azerbaijan)
 
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(azerbaijan, 15f)
+        position = CameraPosition.fromLatLngZoom(azerbaijan, 16f)
     }
 
     var showSearchScreen by remember { mutableStateOf(false) }
@@ -104,8 +106,16 @@ fun MapScreen(
                 currentLocation = LatLng(location.latitude, location.longitude)
                 userMarkerState.position = currentLocation ?: azerbaijan
                 cameraPositionState.position =
-                    CameraPosition.fromLatLngZoom(currentLocation ?: azerbaijan, 15f)
+                    CameraPosition.fromLatLngZoom(currentLocation ?: azerbaijan, 16f)
             }
+        }
+    }
+
+    val coroutineScope = rememberCoroutineScope()
+
+    BackHandler(enabled = true) {
+        coroutineScope.launch {
+            (context as? Activity)?.finish()
         }
     }
 
@@ -114,7 +124,12 @@ fun MapScreen(
             drawerContent = {
                 ModalDrawerSheet {
                     NavigationDrawer(
-                        navController = navController,
+                        onProfileClicked = onProfileClicked,
+                        onBackPress = {
+                            scope.launch {
+                                drawerState.close()
+                            }
+                        },
                         imageUri = viewModel.profile.value?.profilePictureUri,
                         username = viewModel.profile.value?.username.toString()
                     )
@@ -141,20 +156,15 @@ fun MapScreen(
                             uiSettings = MapUiSettings(
                                 zoomControlsEnabled = false,
                                 myLocationButtonEnabled = false,
+                                compassEnabled = false,
                             )
                         ) {
-                            currentLocation?.let {
-                                Marker(
-                                    visible = false,
-                                    state = userMarkerState,
-                                    title = "My Location",
-                                    snippet = "You are here"
-                                )
-//                                cameraPositionState.position = CameraPosition.fromLatLngZoom(
-//                                    it,
-//                                    cameraPositionState.position.zoom
-//                                )
-                            }
+                            Marker(
+                                visible = false,
+                                state = userMarkerState,
+                                title = "My Location",
+                                snippet = "You are here"
+                            )
                         }
                     }
                     Column(
@@ -229,7 +239,7 @@ fun MapScreen(
                                         cameraPositionState.position =
                                             CameraPosition.fromLatLngZoom(
                                                 currentLocation ?: azerbaijan,
-                                                cameraPositionState.position.zoom
+                                                16f
                                             )
                                     },
                                 contentAlignment = Alignment.Center
@@ -285,7 +295,7 @@ fun MapScreen(
                                         maxLines = 1,
                                         placeholder = {
                                             Text(
-                                                text = "Vüsət, hara gedirik?",
+                                                text = "${viewModel.profile.value?.username}, hara gedirik?",
                                                 style = TextStyle(
                                                     color = Color(0xFFBCBCBC),
                                                     fontWeight = FontWeight.Normal,
@@ -348,7 +358,7 @@ private fun getCurrentLocation(
 @Preview(showBackground = true, showSystemUi = true)
 fun MapScreenPreview() {
     MapScreen(
-        navController = rememberNavController(),
+        onProfileClicked = { },
         viewModel = ProfileViewModel(ProfileRepository.getInstance(LocalContext.current))
     )
 }

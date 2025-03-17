@@ -3,11 +3,15 @@ package com.kematian.profile189
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.kematian.profile189.ui.MainScreen
 import com.kematian.profile189.ui.theme.Profile189Theme
@@ -21,6 +25,7 @@ class MainActivity : ComponentActivity() {
         val windowInsetsController = WindowInsetsControllerCompat(window, window.decorView)
         windowInsetsController.isAppearanceLightNavigationBars = true
         windowInsetsController.isAppearanceLightStatusBars = true
+
         setContent {
             Profile189Theme(
                 darkTheme = false

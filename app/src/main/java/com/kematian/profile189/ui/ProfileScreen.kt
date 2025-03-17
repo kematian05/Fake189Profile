@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -44,11 +46,9 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -76,7 +76,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import coil3.ImageLoader
 import coil3.compose.rememberAsyncImagePainter
 import com.kematian.profile189.CustomRadioButton
@@ -99,7 +98,7 @@ import java.util.Locale
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SimpleDateFormat")
 @Composable
 fun ProfileScreen(
-    navController: NavController,
+    onBackClicked: () -> Unit,
     viewModel: ProfileViewModel
 ) {
     val context = LocalContext.current
@@ -127,7 +126,8 @@ fun ProfileScreen(
 
             val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
             profile.birthDate.takeIf { it.isNotEmpty() }?.let {
-                selectedDate = LocalDate.parse(it, formatter).format(DateTimeFormatter.ofPattern("MM/dd/yyyy"))
+                selectedDate =
+                    LocalDate.parse(it, formatter).format(DateTimeFormatter.ofPattern("MM/dd/yyyy"))
             }
             imageUri = viewModel.getImageUriFromPreferences(context)
         }
@@ -228,465 +228,146 @@ fun ProfileScreen(
     LaunchedEffect(selectedDate) { saveProfileDataImmediately() }
     LaunchedEffect(imageUri) { viewModel.saveImageUriToPreferences(context, imageUri) }
 
-    MaterialTheme {
-        Scaffold {
-            Column(
+    BackHandler(enabled = true) {
+        onBackClicked()
+    }
+
+    Column(
+        modifier = Modifier
+            .background(Color(0xFFFEFEFE))
+            .fillMaxSize()
+    ) {
+        Column(
+            modifier = Modifier
+                .systemBarsPadding()
+                .background(color = Color(0xFFF8F8F8))
+        ) {
+            Box(
                 modifier = Modifier
-                    .systemBarsPadding()
-                    .background(color = Color(0xFFF8F8F8))
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
+                    .background(color = Color.White)
             ) {
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
-                        .background(color = Color.White)
+                        .padding(bottom = 24.dp)
                 ) {
-                    Column(
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 24.dp)
+                            .padding(top = 24.dp)
                     ) {
-                        Box(
+                        Icon(
+                            painter = painterResource(id = R.drawable.arrow_back),
+                            contentDescription = "Go Back",
+                            modifier = Modifier
+                                .padding(start = 20.dp)
+                                .size(28.dp)
+                                .align(Alignment.CenterStart)
+                                .clickable(onClick = {
+                                    saveProfileDataImmediately()
+                                    onBackClicked()
+                                })
+                        )
+                        Text(
+                            text = "Profil",
+                            textAlign = TextAlign.Center,
+                            style = TextStyle(
+                                color = Color(0xFF2A2A2A),
+                                fontSize = 32.sp,
+                                fontWeight = FontWeight.Bold,
+                                lineHeight = 40.sp
+                            ),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 24.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.arrow_back),
-                                contentDescription = "Go Back",
-                                modifier = Modifier
-                                    .padding(start = 20.dp)
-                                    .size(28.dp)
-                                    .align(Alignment.CenterStart)
-                                    .clickable(onClick = {
-                                        saveProfileDataImmediately()
-                                        navController.navigate("map")
-                                    })
-                            )
-                            Text(
-                                text = "Profil",
-                                textAlign = TextAlign.Center,
-                                style = TextStyle(
-                                    color = Color(0xFF2A2A2A),
-                                    fontSize = 32.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    lineHeight = 40.sp
-                                ),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .align(Alignment.Center)
-                            )
-                        }
+                                .align(Alignment.Center)
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 28.dp, start = 10.dp)
+                            .width(101.dp)
+                            .height(105.dp)
+                            .align(Alignment.CenterHorizontally)
+                    ) {
+                        Image(
+                            painter = if (imageUri != null) {
+                                rememberAsyncImagePainter(imageUri)
+                            } else {
+                                painterResource(id = R.drawable.profile_picture)
+                            },
+                            contentDescription = "Profile Picture",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(92.dp)
+                                .border(
+                                    width = 2.dp,
+                                    color = Color.Transparent,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                .clip(shape = RoundedCornerShape(12.dp))
+                        )
                         Box(
                             modifier = Modifier
-                                .padding(top = 28.dp, start = 10.dp)
-                                .width(101.dp)
-                                .height(105.dp)
-                                .align(Alignment.CenterHorizontally)
+                                .align(Alignment.BottomEnd)
+                                .size(26.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFFBE502))
+                                .border(2.dp, Color.White, CircleShape),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Image(
-                                painter = if (imageUri != null) {
-                                    rememberAsyncImagePainter(imageUri)
-                                } else {
-                                    painterResource(id = R.drawable.profile_picture)
-                                },
-                                contentDescription = "Profile Picture",
-                                contentScale = ContentScale.Crop,
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Add Icon",
+                                tint = Color.White,
                                 modifier = Modifier
-                                    .size(92.dp)
-                                    .border(
-                                        width = 2.dp,
-                                        color = Color.Transparent,
-                                        shape = RoundedCornerShape(12.dp)
-                                    )
-                                    .clip(shape = RoundedCornerShape(12.dp))
+                                    .size(20.dp)
+                                    .clickable {
+                                        showBottomSheet = true
+                                    }
                             )
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.BottomEnd)
-                                    .size(26.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(0xFFFBE502))
-                                    .border(2.dp, Color.White, CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = "Add Icon",
-                                    tint = Color.White,
-                                    modifier = Modifier
-                                        .size(20.dp)
-                                        .clickable {
-                                            showBottomSheet = true
-                                        }
-                                )
-                            }
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                LazyColumn {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            LazyColumn {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
 //                                .shadow(5.dp, ambientColor = Color(0x0000000D))
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(color = Color.White)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .padding(start = 20.dp, end = 20.dp)
-                                    .fillMaxWidth()
-                            ) {
-                                FocusableOutlinedTextField(
-                                    value = username,
-                                    onValueChange = { username = it },
-                                    placeholderText = "Vusat Orujov",
-                                    fontSize = 20,
-                                    fontHeight = 28,
-                                    hasTrailingIcon = true,
-                                    modifier = Modifier
-                                        .padding(top = 16.dp)
-                                )
-                                Row(
-                                    modifier = Modifier
-                                        .padding(top = 12.dp)
-                                        .fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    val options = listOf("Kişi", "Qadın")
-                                    var expanded by remember { mutableStateOf(false) }
-                                    ExposedDropdownMenuBox(
-                                        expanded = expanded,
-                                        onExpandedChange = { expanded = !expanded },
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .border(
-                                                width = if (expanded) 2.dp else 1.dp,
-                                                color = if (expanded) Color(0xFFFBE502) else Color(
-                                                    0xFFBCBCBC
-                                                ),
-                                                shape = RoundedCornerShape(8.dp)
-                                            )
-                                            .weight(1f)
-                                    ) {
-                                        OutlinedTextField(
-                                            value = gender,
-                                            onValueChange = {},
-                                            readOnly = true,
-                                            placeholder = {
-                                                Text(
-                                                    text = "Cins",
-                                                    color = Color(0xFFBCBCBC),
-                                                    style = TextStyle(
-                                                        fontWeight = FontWeight.Normal,
-                                                        fontSize = 16.sp,
-                                                        lineHeight = 20.sp
-                                                    )
-                                                )
-                                            },
-                                            trailingIcon = {
-                                                AnimatedVisibility(expanded) {
-                                                    Icon(
-                                                        painter = painterResource(id = R.drawable.arrow_up),
-                                                        contentDescription = "Dropdown Icon",
-                                                        tint = Color(0xFFBCBCBC),
-                                                        modifier = Modifier
-                                                            .size(28.dp)
-                                                    )
-                                                }
-                                                AnimatedVisibility(!expanded) {
-                                                    Icon(
-                                                        painter = painterResource(id = R.drawable.arrow_down),
-                                                        contentDescription = "Dropdown Icon",
-                                                        tint = Color(0xFFBCBCBC),
-                                                        modifier = Modifier
-                                                            .size(28.dp)
-                                                    )
-                                                }
-                                            },
-                                            colors = OutlinedTextFieldDefaults.colors(
-                                                unfocusedBorderColor = Color.Transparent,
-                                                focusedBorderColor = Color.Transparent
-                                            ),
-                                            modifier = Modifier
-                                                .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                                                .fillMaxWidth()
-                                        )
-
-                                        ExposedDropdownMenu(
-                                            expanded = expanded,
-                                            onDismissRequest = { expanded = false },
-                                            shape = RoundedCornerShape(8.dp),
-                                            containerColor = Color(0xFFFFFFFF),
-                                            modifier = Modifier
-//                                            .padding(top = 2.dp, bottom = 2.dp)
-                                                .border(
-                                                    width = 2.dp,
-                                                    color = Color(0xFFFBE502),
-                                                    shape = RoundedCornerShape(8.dp)
-                                                )
-                                        ) {
-                                            Column(
-                                                modifier = Modifier
-                                                    .fillMaxWidth(),
-                                                verticalArrangement = Arrangement.SpaceBetween
-                                            ) {
-                                                options.forEach { option ->
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            .clickable {
-                                                                gender = option
-                                                                expanded = false
-                                                            },
-                                                    ) {
-                                                        Row(
-                                                            modifier = Modifier
-                                                                .fillMaxWidth()
-                                                                .padding(
-                                                                    start = 16.dp,
-                                                                    top = 12.dp,
-                                                                    bottom = 12.dp,
-                                                                    end = 16.dp
-                                                                )
-                                                                .align(Alignment.Center)
-                                                        ) {
-                                                            Text(
-                                                                text = option,
-                                                                style = TextStyle(
-                                                                    color = Color(0xFF14110F),
-                                                                    fontWeight = FontWeight.Normal,
-                                                                    fontSize = 16.sp,
-                                                                    lineHeight = 24.sp
-                                                                ),
-                                                                modifier = Modifier
-                                                                    .align(Alignment.CenterVertically)
-                                                                    .weight(1f)
-                                                            )
-                                                            CustomRadioButton(
-                                                                selected = option == gender,
-                                                                onClick = {
-                                                                    gender = option
-                                                                    expanded = false
-                                                                }
-                                                            )
-                                                        }
-                                                    }
-                                                    if (option != options.last()) {
-                                                        HorizontalDivider(
-                                                            thickness = 1.dp,
-                                                            color = Color(0xFFDEDEDE),
-                                                            modifier = Modifier
-                                                                .padding(
-                                                                    start = 16.dp,
-                                                                    end = 16.dp
-                                                                )
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .border(
-                                                width = if (expandedDatePicker) 2.dp else 1.dp,
-                                                color = if (expandedDatePicker) Color(0xFFFBE502) else Color(
-                                                    0xFFBCBCBC
-                                                ),
-                                                shape = RoundedCornerShape(8.dp)
-                                            )
-                                            .weight(1f)
-                                            .clickable {
-                                                expandedDatePicker = true
-                                            },
-                                    ) {
-                                        OutlinedTextField(
-                                            value = selectedDate,
-                                            onValueChange = {},
-                                            readOnly = true,
-                                            enabled = false,
-                                            placeholder = {
-                                                Text(
-                                                    text = "MM/DD/YY",
-                                                    color = Color(0xFFBCBCBC),
-                                                    style = TextStyle(
-                                                        fontWeight = FontWeight.Normal,
-                                                        fontSize = 16.sp,
-                                                        lineHeight = 20.sp
-                                                    )
-                                                )
-                                            },
-                                            textStyle = TextStyle(
-                                                color = Color.Black,
-                                                fontWeight = FontWeight.Normal,
-                                                fontSize = 16.sp,
-                                                lineHeight = 24.sp
-                                            ),
-                                            trailingIcon = {
-                                                this@Row.AnimatedVisibility(expandedDatePicker) {
-                                                    Icon(
-                                                        painter = painterResource(id = R.drawable.arrow_up),
-                                                        contentDescription = "Dropdown Icon",
-                                                        tint = Color(0xFFBCBCBC),
-                                                        modifier = Modifier
-                                                            .size(28.dp)
-                                                    )
-                                                }
-                                                this@Row.AnimatedVisibility(!expandedDatePicker) {
-                                                    Icon(
-                                                        painter = painterResource(id = R.drawable.arrow_down),
-                                                        contentDescription = "Dropdown Icon",
-                                                        tint = Color(0xFFBCBCBC),
-                                                        modifier = Modifier
-                                                            .size(28.dp)
-                                                    )
-                                                }
-                                            },
-                                            colors = OutlinedTextFieldDefaults.colors(
-                                                unfocusedBorderColor = Color.Transparent,
-                                                focusedBorderColor = Color.Transparent,
-                                                disabledBorderColor = Color.Transparent,
-                                            ),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                        )
-                                    }
-                                    if (expandedDatePicker) {
-                                        DatePickerDialog(
-                                            onDismissRequest = { expandedDatePicker = false },
-                                            confirmButton = { },
-                                            dismissButton = { },
-                                        ) {
-                                            DatePicker(
-                                                state = datePickerState,
-                                                colors = DatePickerDefaults.colors(
-                                                    selectedDayContainerColor = Color(0xFFF7DF12),
-                                                    selectedYearContainerColor = Color(0xFFF7DF12),
-                                                    navigationContentColor = Color(0xFFF7DF12),
-                                                    weekdayContentColor = Color(0xFFCDCBCC),
-                                                ),
-                                                title = null,
-                                                headline = null,
-                                                showModeToggle = false
-                                            )
-                                        }
-                                    }
-                                }
-                                FocusableOutlinedTextField(
-                                    value = telephone,
-                                    onValueChange = { telephone = it },
-                                    placeholderText = "+994 70 878 28 48",
-                                    hasTrailingIcon = true,
-                                    modifier = Modifier.padding(top = 16.dp)
-                                )
-                                FocusableOutlinedTextField(
-                                    value = email,
-                                    onValueChange = { email = it },
-                                    placeholderText = "orucov.vuset@gmail.com",
-                                    hasTrailingIcon = true,
-                                    modifier = Modifier.padding(top = 16.dp, bottom = 20.dp)
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Box(
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(color = Color.White)
+                    ) {
+                        Column(
                             modifier = Modifier
+                                .padding(start = 20.dp, end = 20.dp)
                                 .fillMaxWidth()
-//                                .shadow(5.dp, ambientColor = Color(0x0000000D))
-                                .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                                .background(color = Color.White)
                         ) {
-                            Column(
+                            FocusableOutlinedTextField(
+                                value = username,
+                                onValueChange = { username = it },
+                                placeholderText = "Vusat Orujov",
+                                fontSize = 20,
+                                fontHeight = 28,
+                                hasTrailingIcon = true,
                                 modifier = Modifier
-                                    .padding(start = 20.dp, top = 20.dp, end = 20.dp)
-                                    .fillMaxWidth()
+                                    .padding(top = 16.dp)
+                            )
+                            Row(
+                                modifier = Modifier
+                                    .padding(top = 12.dp)
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .border(
-                                            width = 1.dp,
-                                            color = Color(0xFFBCBCBC),
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                        .clickable { /*TODO*/ }
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .padding(16.dp)
-                                    ) {
-                                        Image(
-                                            painter = painterResource(R.drawable.google),
-                                            contentDescription = "Google",
-                                            modifier = Modifier
-                                                .size(24.dp)
-                                        )
-                                        Text(
-                                            text = "Google ilə davam et",
-                                            style = TextStyle(
-//                                        fontFamily = FontFamily(Font(R.font.poppinslight)),
-                                                color = Color(0xFF9B9B9B),
-                                                fontSize = 20.sp,
-                                                lineHeight = 28.sp
-                                            ),
-                                            modifier = Modifier
-                                                .padding(start = 58.dp)
-                                                .align(Alignment.CenterVertically)
-                                        )
-                                    }
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .padding(top = 16.dp)
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .border(
-                                            width = 1.dp,
-                                            color = Color(0xFFBCBCBC),
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                        .clickable { /*TODO*/ }
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .padding(16.dp)
-                                    ) {
-                                        Image(
-                                            painter = painterResource(R.drawable.facebook),
-                                            contentDescription = "Facebook",
-                                            modifier = Modifier
-                                                .size(24.dp)
-                                        )
-                                        Text(
-                                            text = "Facebook ilə davam et",
-                                            style = TextStyle(
-//                                        fontFamily = FontFamily(Font(R.font.poppinslight)),
-                                                color = Color(0xFF9B9B9B),
-                                                fontSize = 20.sp,
-                                                lineHeight = 28.sp
-                                            ),
-                                            modifier = Modifier
-                                                .padding(start = 58.dp)
-                                                .align(Alignment.CenterVertically)
-                                        )
-                                    }
-                                }
-                                val options =
-                                    listOf("Azərbaycan dili", "Rus dili", "Ingilis dili")
+                                val options = listOf("Kişi", "Qadın")
                                 var expanded by remember { mutableStateOf(false) }
-
                                 ExposedDropdownMenuBox(
                                     expanded = expanded,
                                     onExpandedChange = { expanded = !expanded },
                                     modifier = Modifier
-                                        .padding(top = 16.dp)
                                         .fillMaxWidth()
                                         .border(
                                             width = if (expanded) 2.dp else 1.dp,
@@ -695,14 +376,15 @@ fun ProfileScreen(
                                             ),
                                             shape = RoundedCornerShape(8.dp)
                                         )
+                                        .weight(1f)
                                 ) {
                                     OutlinedTextField(
-                                        value = language,
+                                        value = gender,
                                         onValueChange = {},
                                         readOnly = true,
                                         placeholder = {
                                             Text(
-                                                text = "Azərbaycan dili",
+                                                text = "Cins",
                                                 color = Color(0xFFBCBCBC),
                                                 style = TextStyle(
                                                     fontWeight = FontWeight.Normal,
@@ -763,7 +445,7 @@ fun ProfileScreen(
                                                     modifier = Modifier
                                                         .fillMaxWidth()
                                                         .clickable {
-                                                            language = option
+                                                            gender = option
                                                             expanded = false
                                                         },
                                                 ) {
@@ -791,9 +473,9 @@ fun ProfileScreen(
                                                                 .weight(1f)
                                                         )
                                                         CustomRadioButton(
-                                                            selected = option == language,
+                                                            selected = option == gender,
                                                             onClick = {
-                                                                language = option
+                                                                gender = option
                                                                 expanded = false
                                                             }
                                                         )
@@ -804,75 +486,399 @@ fun ProfileScreen(
                                                         thickness = 1.dp,
                                                         color = Color(0xFFDEDEDE),
                                                         modifier = Modifier
-                                                            .padding(start = 16.dp, end = 16.dp)
+                                                            .padding(
+                                                                start = 16.dp,
+                                                                end = 16.dp
+                                                            )
                                                     )
                                                 }
                                             }
                                         }
                                     }
                                 }
-                                Spacer(modifier = Modifier.height(24.dp))
-                                FilledTonalButton(
-                                    onClick = { /*TODO*/ },
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = ButtonColors(
-                                        contentColor = Color(0xFF878787),
-                                        containerColor = Color(0xFFF1F1F1),
-                                        disabledContainerColor = Color.Transparent,
-                                        disabledContentColor = Color.Transparent,
-                                    ),
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(56.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .border(
+                                            width = if (expandedDatePicker) 2.dp else 1.dp,
+                                            color = if (expandedDatePicker) Color(0xFFFBE502) else Color(
+                                                0xFFBCBCBC
+                                            ),
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .weight(1f)
+                                        .clickable {
+                                            expandedDatePicker = true
+                                        },
+                                ) {
+                                    OutlinedTextField(
+                                        value = selectedDate,
+                                        onValueChange = {},
+                                        readOnly = true,
+                                        enabled = false,
+                                        placeholder = {
+                                            Text(
+                                                text = "MM/DD/YY",
+                                                color = Color(0xFFBCBCBC),
+                                                style = TextStyle(
+                                                    fontWeight = FontWeight.Normal,
+                                                    fontSize = 16.sp,
+                                                    lineHeight = 20.sp
+                                                )
+                                            )
+                                        },
+                                        textStyle = TextStyle(
+                                            color = Color.Black,
+                                            fontWeight = FontWeight.Normal,
+                                            fontSize = 16.sp,
+                                            lineHeight = 24.sp
+                                        ),
+                                        trailingIcon = {
+                                            this@Row.AnimatedVisibility(expandedDatePicker) {
+                                                Icon(
+                                                    painter = painterResource(id = R.drawable.arrow_up),
+                                                    contentDescription = "Dropdown Icon",
+                                                    tint = Color(0xFFBCBCBC),
+                                                    modifier = Modifier
+                                                        .size(28.dp)
+                                                )
+                                            }
+                                            this@Row.AnimatedVisibility(!expandedDatePicker) {
+                                                Icon(
+                                                    painter = painterResource(id = R.drawable.arrow_down),
+                                                    contentDescription = "Dropdown Icon",
+                                                    tint = Color(0xFFBCBCBC),
+                                                    modifier = Modifier
+                                                        .size(28.dp)
+                                                )
+                                            }
+                                        },
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            unfocusedBorderColor = Color.Transparent,
+                                            focusedBorderColor = Color.Transparent,
+                                            disabledBorderColor = Color.Transparent,
+                                        ),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                    )
+                                }
+                                if (expandedDatePicker) {
+                                    DatePickerDialog(
+                                        onDismissRequest = { expandedDatePicker = false },
+                                        confirmButton = { },
+                                        dismissButton = { },
+                                    ) {
+                                        DatePicker(
+                                            state = datePickerState,
+                                            colors = DatePickerDefaults.colors(
+                                                selectedDayContainerColor = Color(0xFFF7DF12),
+                                                selectedYearContainerColor = Color(0xFFF7DF12),
+                                                navigationContentColor = Color(0xFFF7DF12),
+                                                weekdayContentColor = Color(0xFFCDCBCC),
+                                            ),
+                                            title = null,
+                                            headline = null,
+                                            showModeToggle = false
+                                        )
+                                    }
+                                }
+                            }
+                            FocusableOutlinedTextField(
+                                value = telephone,
+                                onValueChange = { telephone = it },
+                                placeholderText = "+994 70 878 28 48",
+                                hasTrailingIcon = true,
+                                modifier = Modifier.padding(top = 16.dp)
+                            )
+                            FocusableOutlinedTextField(
+                                value = email,
+                                onValueChange = { email = it },
+                                placeholderText = "orucov.vuset@gmail.com",
+                                hasTrailingIcon = true,
+                                modifier = Modifier.padding(top = 16.dp, bottom = 20.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+//                                .shadow(5.dp, ambientColor = Color(0x0000000D))
+                            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                            .background(color = Color.White)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(start = 20.dp, top = 20.dp, end = 20.dp)
+                                .fillMaxWidth()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .border(
+                                        width = 1.dp,
+                                        color = Color(0xFFBCBCBC),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .clickable { /*TODO*/ }
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                ) {
+                                    Image(
+                                        painter = painterResource(R.drawable.google),
+                                        contentDescription = "Google",
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                    )
+                                    Text(
+                                        text = "Google ilə davam et",
+                                        style = TextStyle(
+//                                        fontFamily = FontFamily(Font(R.font.poppinslight)),
+                                            color = Color(0xFF9B9B9B),
+                                            fontSize = 20.sp,
+                                            lineHeight = 28.sp
+                                        ),
+                                        modifier = Modifier
+                                            .padding(start = 58.dp)
+                                            .align(Alignment.CenterVertically)
+                                    )
+                                }
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .padding(top = 16.dp)
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .border(
+                                        width = 1.dp,
+                                        color = Color(0xFFBCBCBC),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .clickable { /*TODO*/ }
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                ) {
+                                    Image(
+                                        painter = painterResource(R.drawable.facebook),
+                                        contentDescription = "Facebook",
+                                        modifier = Modifier
+                                            .size(24.dp)
+                                    )
+                                    Text(
+                                        text = "Facebook ilə davam et",
+                                        style = TextStyle(
+//                                        fontFamily = FontFamily(Font(R.font.poppinslight)),
+                                            color = Color(0xFF9B9B9B),
+                                            fontSize = 20.sp,
+                                            lineHeight = 28.sp
+                                        ),
+                                        modifier = Modifier
+                                            .padding(start = 58.dp)
+                                            .align(Alignment.CenterVertically)
+                                    )
+                                }
+                            }
+                            val options =
+                                listOf("Azərbaycan dili", "Rus dili", "Ingilis dili")
+                            var expanded by remember { mutableStateOf(false) }
+
+                            ExposedDropdownMenuBox(
+                                expanded = expanded,
+                                onExpandedChange = { expanded = !expanded },
+                                modifier = Modifier
+                                    .padding(top = 16.dp)
+                                    .fillMaxWidth()
+                                    .border(
+                                        width = if (expanded) 2.dp else 1.dp,
+                                        color = if (expanded) Color(0xFFFBE502) else Color(
+                                            0xFFBCBCBC
+                                        ),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                            ) {
+                                OutlinedTextField(
+                                    value = language,
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    placeholder = {
+                                        Text(
+                                            text = "Azərbaycan dili",
+                                            color = Color(0xFFBCBCBC),
+                                            style = TextStyle(
+                                                fontWeight = FontWeight.Normal,
+                                                fontSize = 16.sp,
+                                                lineHeight = 20.sp
+                                            )
+                                        )
+                                    },
+                                    trailingIcon = {
+                                        AnimatedVisibility(expanded) {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.arrow_up),
+                                                contentDescription = "Dropdown Icon",
+                                                tint = Color(0xFFBCBCBC),
+                                                modifier = Modifier
+                                                    .size(28.dp)
+                                            )
+                                        }
+                                        AnimatedVisibility(!expanded) {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.arrow_down),
+                                                contentDescription = "Dropdown Icon",
+                                                tint = Color(0xFFBCBCBC),
+                                                modifier = Modifier
+                                                    .size(28.dp)
+                                            )
+                                        }
+                                    },
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        unfocusedBorderColor = Color.Transparent,
+                                        focusedBorderColor = Color.Transparent
+                                    ),
+                                    modifier = Modifier
+                                        .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                                        .fillMaxWidth()
+                                )
+
+                                ExposedDropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false },
+                                    shape = RoundedCornerShape(8.dp),
+                                    containerColor = Color(0xFFFFFFFF),
+                                    modifier = Modifier
+//                                            .padding(top = 2.dp, bottom = 2.dp)
                                         .border(
                                             width = 2.dp,
-                                            color = Color(0xFFF1F1F1),
+                                            color = Color(0xFFFBE502),
                                             shape = RoundedCornerShape(8.dp)
                                         )
                                 ) {
-                                    Text(
-                                        text = "Hesabdan çıx",
-                                        textAlign = TextAlign.Center,
-                                        color = Color(0xFF878787),
-                                        style = TextStyle(
-//                                            fontFamily = FontFamily(Font(R.font.poppinsmedium)),
-                                            fontWeight = FontWeight.Medium,
-                                            fontSize = 16.sp,
-                                            lineHeight = 22.sp
-                                        )
-                                    )
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                        verticalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        options.forEach { option ->
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clickable {
+                                                        language = option
+                                                        expanded = false
+                                                    },
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(
+                                                            start = 16.dp,
+                                                            top = 12.dp,
+                                                            bottom = 12.dp,
+                                                            end = 16.dp
+                                                        )
+                                                        .align(Alignment.Center)
+                                                ) {
+                                                    Text(
+                                                        text = option,
+                                                        style = TextStyle(
+                                                            color = Color(0xFF14110F),
+                                                            fontWeight = FontWeight.Normal,
+                                                            fontSize = 16.sp,
+                                                            lineHeight = 24.sp
+                                                        ),
+                                                        modifier = Modifier
+                                                            .align(Alignment.CenterVertically)
+                                                            .weight(1f)
+                                                    )
+                                                    CustomRadioButton(
+                                                        selected = option == language,
+                                                        onClick = {
+                                                            language = option
+                                                            expanded = false
+                                                        }
+                                                    )
+                                                }
+                                            }
+                                            if (option != options.last()) {
+                                                HorizontalDivider(
+                                                    thickness = 1.dp,
+                                                    color = Color(0xFFDEDEDE),
+                                                    modifier = Modifier
+                                                        .padding(start = 16.dp, end = 16.dp)
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
-                                Spacer(modifier = Modifier.height(6.dp))
-                                FilledTonalButton(
-                                    onClick = { /*TODO*/ },
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = ButtonColors(
-                                        contentColor = Color.Transparent,
-                                        containerColor = Color.Transparent,
-                                        disabledContainerColor = Color.Transparent,
-                                        disabledContentColor = Color.Transparent,
-                                    ),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(56.dp)
-                                        .border(
-                                            width = 2.dp,
-                                            color = Color(0xFFF1F1F1),
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                ) {
-                                    Text(
-                                        text = "Hesabı sil",
-                                        textAlign = TextAlign.Center,
-                                        color = Color(0xFFFF0000),
-                                        style = TextStyle(
-//                                            fontFamily = FontFamily(Font(R.font.poppinsmedium)),
-                                            fontWeight = FontWeight.Medium,
-                                            fontSize = 16.sp,
-                                            lineHeight = 22.sp
-                                        )
+                            }
+                            Spacer(modifier = Modifier.height(24.dp))
+                            FilledTonalButton(
+                                onClick = { /*TODO*/ },
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonColors(
+                                    contentColor = Color(0xFF878787),
+                                    containerColor = Color(0xFFF1F1F1),
+                                    disabledContainerColor = Color.Transparent,
+                                    disabledContentColor = Color.Transparent,
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                                    .border(
+                                        width = 2.dp,
+                                        color = Color(0xFFF1F1F1),
+                                        shape = RoundedCornerShape(8.dp)
                                     )
-                                }
+                            ) {
+                                Text(
+                                    text = "Hesabdan çıx",
+                                    textAlign = TextAlign.Center,
+                                    color = Color(0xFF878787),
+                                    style = TextStyle(
+//                                            fontFamily = FontFamily(Font(R.font.poppinsmedium)),
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 16.sp,
+                                        lineHeight = 22.sp
+                                    )
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(6.dp))
+                            FilledTonalButton(
+                                onClick = { /*TODO*/ },
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonColors(
+                                    contentColor = Color.Transparent,
+                                    containerColor = Color.Transparent,
+                                    disabledContainerColor = Color.Transparent,
+                                    disabledContentColor = Color.Transparent,
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                                    .border(
+                                        width = 2.dp,
+                                        color = Color(0xFFF1F1F1),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                            ) {
+                                Text(
+                                    text = "Hesabı sil",
+                                    textAlign = TextAlign.Center,
+                                    color = Color(0xFFFF0000),
+                                    style = TextStyle(
+//                                            fontFamily = FontFamily(Font(R.font.poppinsmedium)),
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 16.sp,
+                                        lineHeight = 22.sp
+                                    )
+                                )
                             }
                         }
                     }
@@ -951,7 +957,7 @@ fun saveImageToInternalStorage(context: Context, bitmap: Bitmap): Uri {
 @Composable
 fun ProfileScreenPreview() {
     ProfileScreen(
-        navController = NavController(LocalContext.current),
+        onBackClicked = {},
         viewModel = viewModel(
             factory = ProfileViewModel.ProfileViewModelFactory(
                 ProfileRepository.getInstance(LocalContext.current)

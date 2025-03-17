@@ -1,10 +1,8 @@
 package com.kematian.profile189.ui
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,9 +14,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -28,11 +26,15 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,7 +45,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintSet
+import androidx.constraintlayout.compose.Dimension
+import androidx.constraintlayout.compose.ExperimentalMotionApi
+import androidx.constraintlayout.compose.MotionLayout
+import androidx.constraintlayout.compose.layoutId
 import com.kematian.profile189.R
+import kotlinx.coroutines.delay
 
 data class LocationItemData(
     val name: String,
@@ -51,7 +59,10 @@ data class LocationItemData(
     @DrawableRes val icon: Int
 )
 
-@SuppressLint("RememberReturnType", "UseOfNonLambdaOffsetOverload")
+@OptIn(ExperimentalMotionApi::class)
+@SuppressLint("RememberReturnType", "UseOfNonLambdaOffsetOverload",
+    "UnusedMaterial3ScaffoldPaddingParameter"
+)
 @Composable
 fun SearchScreen(
     onClose: () -> Unit,
@@ -77,120 +88,180 @@ fun SearchScreen(
         )
     }
 
-    val topBoxOffset = remember { Animatable(-500f) }
-    val bottomBoxOffset = remember { Animatable(500f) }
-
-    LaunchedEffect(Unit) {
-        topBoxOffset.animateTo(
-            targetValue = 0f,
-            animationSpec = tween(durationMillis = 50, easing = FastOutSlowInEasing)
-        )
-        bottomBoxOffset.animateTo(
-            targetValue = 0f,
-            animationSpec = tween(durationMillis = 50, easing = FastOutSlowInEasing)
-        )
+    BackHandler(enabled = true) {
+        onClose()
     }
 
-    Column(
-        modifier = Modifier
-            .background(Color(0xFFF8F8F8))
-            .fillMaxSize()
-    ) {
-        Box(
-            modifier = Modifier
-//                .systemBarsPadding()
-                .fillMaxWidth()
-//                .shadow(5.dp, ambientColor = Color(0xFFFEFEFE))
-                .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
-                .background(color = Color(0xFFFEFEFE))
-                .offset(y = topBoxOffset.value.dp)
-        ) {
-            Column {
-                Box(
-                    modifier = Modifier
-                        .padding(top = 20.dp)
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        text = "Ünvanlar",
-                        style = TextStyle(
-                            fontSize = 32.sp,
-                            lineHeight = 40.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF3C3938)
-                        ),
-                        modifier = Modifier
-                            .padding(top = 29.dp)
-                            .align(Alignment.Center)
-                    )
-
-                    Icon(
-                        painter = painterResource(R.drawable.close),
-                        contentDescription = "Close",
-                        tint = Color(0xFFBCBCBC),
-                        modifier = Modifier
-                            .padding(start = 20.dp, top = 30.dp)
-                            .align(Alignment.CenterStart)
-                            .size(24.dp)
-                            .clickable {
-                                onClose()
-                            }
-                    )
-
-                    Icon(
-                        painter = painterResource(R.drawable.plus),
-                        contentDescription = "Add",
-                        tint = Color(0xFF2A2A2A),
-                        modifier = Modifier
-                            .padding(end = 20.dp, top = 24.dp)
-                            .align(Alignment.CenterEnd)
-                            .size(36.dp)
-                            .clickable {
-                                if (searchList.size < 5) {
-                                    searchList.add("")
-                                }
-                            }
-                    )
-                }
-                Spacer(modifier = Modifier.height(28.dp))
-                repeat(searchList.size) { index ->
-                    CustomTextField(
-                        searchQuery = searchList[index],
-                        onSearchQueryChange = {
-                            searchList[index] = it
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-                Spacer(modifier = Modifier.height(20.dp))
-            }
+    var progress by remember { mutableFloatStateOf(0f) }
+    LaunchedEffect(progress) {
+        while (progress < 1f) {
+            progress += 0.5f
+            delay(500)
         }
-        Box(
+    }
+
+    var progressResult by remember { mutableFloatStateOf(0f) }
+    LaunchedEffect(progressResult) {
+        while (progressResult < 1f) {
+            progressResult += 0.5f
+            delay(300)
+        }
+    }
+
+    Scaffold {
+        Column(
             modifier = Modifier
-                .padding(top = 8.dp)
+                .background(Color(0xFFFEFEFE))
                 .fillMaxSize()
-//                .shadow(5.dp, ambientColor = Color(0xFFFEFEFE))
-                .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                .background(color = Color(0xFFFEFEFE))
-                .offset(y = bottomBoxOffset.value.dp)
         ) {
             Column(
                 modifier = Modifier
-                    .padding(horizontal = 20.dp)
-                    .fillMaxWidth()
+                    .systemBarsPadding()
+                    .background(Color(0xFFF8F8F8))
+                    .fillMaxSize()
             ) {
-                Spacer(modifier = Modifier.height(8.dp))
-                repeat(locationList.size) { index ->
-                    LocationItem(
-                        name = locationList[index].name,
-                        location = locationList[index].location,
-                        icon = locationList[index].icon
-                    )
-                    if (index != locationList.size - 1) {
-                        HorizontalDivider(
-                            modifier = Modifier.fillMaxWidth(),
-                            color = Color(0xFFBCBCBC)
-                        )
+                MotionLayout(
+                    start = ConstraintSet {
+                        val topBox = createRefFor("topBox")
+                        constrain(topBox) {
+                            width = Dimension.wrapContent
+                            height = Dimension.value(0.dp)
+                            top.linkTo(parent.top, margin = (-400).dp)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                    },
+                    end = ConstraintSet {
+                        val topBox = createRefFor("topBox")
+                        constrain(topBox) {
+                            width = Dimension.wrapContent
+                            height = Dimension.fillToConstraints
+                            top.linkTo(parent.top)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                    },
+                    progress = progress
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .layoutId("topBox")
+                            .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
+                            .background(color = Color(0xFFFEFEFE))
+                    ) {
+                        Column {
+                            Box(
+                                modifier = Modifier
+//                        .padding(top = 20.dp)
+                                    .fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "Ünvanlar",
+                                    style = TextStyle(
+                                        fontSize = 32.sp,
+                                        lineHeight = 40.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF3C3938)
+                                    ),
+                                    modifier = Modifier
+                                        .padding(top = 29.dp)
+                                        .align(Alignment.Center)
+                                )
+
+                                Icon(
+                                    painter = painterResource(R.drawable.close),
+                                    contentDescription = "Close",
+                                    tint = Color(0xFFBCBCBC),
+                                    modifier = Modifier
+                                        .padding(start = 20.dp, top = 30.dp)
+                                        .align(Alignment.CenterStart)
+                                        .size(24.dp)
+                                        .clickable {
+                                            onClose()
+                                        }
+                                )
+
+                                Icon(
+                                    painter = painterResource(R.drawable.plus),
+                                    contentDescription = "Add",
+                                    tint = Color(0xFF2A2A2A),
+                                    modifier = Modifier
+                                        .padding(end = 20.dp, top = 24.dp)
+                                        .align(Alignment.CenterEnd)
+                                        .size(36.dp)
+                                        .clickable {
+//                                        if (searchList.size < 5) {
+//                                            searchList.add("")
+//                                        }
+                                        }
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(28.dp))
+                            repeat(searchList.size) { index ->
+                                CustomTextField(
+                                    searchQuery = searchList[index],
+                                    onSearchQueryChange = {
+                                        searchList[index] = it
+                                    }
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                            }
+                            Spacer(modifier = Modifier.height(20.dp))
+                        }
+                    }
+                }
+                MotionLayout(
+                    start = ConstraintSet {
+                        val bottomBox = createRefFor("bottomBox")
+                        constrain(bottomBox) {
+                            width = Dimension.wrapContent
+                            height = Dimension.value(0.dp)
+                            bottom.linkTo(parent.bottom, margin = (-1000).dp)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                    },
+                    end = ConstraintSet {
+                        val bottomBox = createRefFor("bottomBox")
+                        constrain(bottomBox) {
+                            width = Dimension.wrapContent
+                            height = Dimension.wrapContent
+                            bottom.linkTo(parent.bottom)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                    },
+                    progress = progressResult
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .layoutId("bottomBox")
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                            .background(color = Color(0xFFFEFEFE))
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(horizontal = 20.dp)
+                                .fillMaxWidth()
+                        ) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            repeat(locationList.size) { index ->
+                                LocationItem(
+                                    name = locationList[index].name,
+                                    location = locationList[index].location,
+                                    icon = locationList[index].icon
+                                )
+                                if (index != locationList.size - 1) {
+                                    HorizontalDivider(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        color = Color(0xFFBCBCBC)
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -276,6 +347,7 @@ fun CustomTextField(
         )
     }
 }
+
 
 @Composable
 fun LocationItem(name: String, location: String, @DrawableRes icon: Int) {

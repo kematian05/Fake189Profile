@@ -1,5 +1,6 @@
 [versions]
 accompanistPermissionsVersion = "0.29.0-alpha"
+accompanistSystemuicontroller = "0.31.0-alpha"
 agp = "8.9.0"
 androidxConstraintlayoutCompose = "1.0.1"
 coilCompose = "3.1.0"
@@ -37,6 +38,7 @@ androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 com-google-accompanist-accompanist-navigation-material = { module = "com.google.accompanist:accompanist-navigation-material", version.ref = "googleAccompanistNavigationMaterialVersion" }
 google-accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissionsVersion" }
+google-accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontroller" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

@@ -17,19 +17,25 @@ fun MainScreen() {
     val profileViewModel = ProfileViewModel(
         repository = ProfileRepository.getInstance(LocalContext.current)
     )
+
+
     NavHost(navController = navController, startDestination = "map") {
         composable("profile") {
-            ProfileScreen(navController = navController, viewModel = profileViewModel)
-        }
-        composable("map") {
-            MapScreen(
-                navController = navController,
+            ProfileScreen(
+                onBackClicked = {
+                    navController.popBackStack()
+                },
                 viewModel = profileViewModel
             )
         }
-        composable("search") {
-            SearchScreen(
-                onClose = { navController.popBackStack() }
+        composable("map") {
+            MapScreen(
+                onProfileClicked = {
+                    if (navController.currentBackStackEntry?.destination?.route != "profile") {
+                        navController.navigate("profile")
+                    }
+                },
+                viewModel = profileViewModel
             )
         }
     }
